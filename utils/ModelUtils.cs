@@ -22,15 +22,21 @@ namespace utils
 			       boltDiameter = 0;
 			int boltNParts = 1;
 			myBoltGroup.GetReportProperty("BOLT_NPARTS", ref boltNParts);
-			string[] boltPartGUID = new string[boltNParts];
-			myBoltGroup.GetReportProperty("MAIN_PART.GUID", ref boltPartGUID[0]);
-			if (boltNParts > 1)
+			List<Part> boltedParts = new List<Part>();
+
+			boltedParts.Add(myBoltGroup.PartToBoltTo);
+			if (boltNParts > 2)
 			{
-				for (int i = 1; i < boltNParts; i++)
+				foreach (Part part in myBoltGroup.OtherPartsToBolt)
 				{
-					myBoltGroup.GetReportProperty("SECONDARY_" + i + ".GUID", ref boltPartGUID[i]);
+					boltedParts.Add(part);
 				}
 			}
+			if (boltNParts > 1)
+			{
+				boltedParts.Add(myBoltGroup.PartToBeBolted);
+			}
+
 			myBoltGroup.GetReportProperty("LENGTH",ref boltLength);
 			myBoltGroup.GetReportProperty("DIAMETER", ref boltDiameter);
 
@@ -39,11 +45,18 @@ namespace utils
 			Console.WriteLine(boltNParts + "\n" +
 							  boltDiameter + "\n" +
 							  boltLength);
-			foreach (String GUID in boltPartGUID)
-			{
-				Console.WriteLine(GUID);
-			}
+			
 			Console.WriteLine(myBoltGroup.BoltStandard);
+			Console.WriteLine(myBoltGroup.CutLength);
+
+			foreach (Part part in boltedParts)
+			{
+				Console.WriteLine(part.Profile.ProfileString);
+			}
+			foreach (Point cord in myBoltGroup.BoltPositions)
+			{
+				Console.WriteLine(cord.ToString());
+			}
 			
         }
 
