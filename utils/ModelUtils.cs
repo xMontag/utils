@@ -9,6 +9,8 @@ using Tekla.Structures;
 using Tekla.Structures.Model;
 using Tekla.Structures.Model.UI;
 using Tekla.Structures.Geometry3d;
+using Tekla.Structures.Solid;
+
 
 namespace utils
 {
@@ -52,6 +54,11 @@ namespace utils
 			foreach (Part part in boltedParts)
 			{
 				Console.WriteLine(part.Profile.ProfileString);
+				ArrayList intesections = new ArrayList(part.GetSolid().Intersect(new Point(12387.87, 212.13, 104.0),new Point(12158.07, 220.97, -131.4)));
+				foreach (Point myPoint in intesections)
+				{
+					Console.WriteLine(myPoint.ToString());
+				}
 			}
 			foreach (Point cord in myBoltGroup.BoltPositions)
 			{
