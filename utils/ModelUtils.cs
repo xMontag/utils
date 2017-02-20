@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Globalization;
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,8 +18,13 @@ namespace utils
 {
     public class ModelUtils
     {
+		private readonly Model _Model = new Model();
+		private static GraphicsDrawer GraphicsDrawer = new GraphicsDrawer();
+		private readonly static Color TextColor = new Color(1, 0, 1);
 		public static void CheckOneBoltGroup()
         {
+			
+
             Picker picker = new Picker();            
             BoltGroup myBoltGroup = picker.PickObject(Picker.PickObjectEnum.PICK_ONE_BOLTGROUP, "pick BOLT GROUP") as BoltGroup;
 			double boltLength = 0,
@@ -42,31 +49,40 @@ namespace utils
 			myBoltGroup.GetReportProperty("LENGTH",ref boltLength);
 			myBoltGroup.GetReportProperty("DIAMETER", ref boltDiameter);
 
+			double boltExtraLenght = myBoltGroup.ExtraLength;
+			double boltCutLength = myBoltGroup.CutLength;
 
+			ArrayList boltLines = new ArrayList();
 
-			Console.WriteLine(boltNParts + "\n" +
-							  boltDiameter + "\n" +
-							  boltLength);
-			
-			Console.WriteLine(myBoltGroup.BoltStandard);
-			Console.WriteLine(myBoltGroup.CutLength);
+			CoordinateSystem boltCS = new CoordinateSystem(myBoltGroup.FirstPosition, myBoltGroup.GetCoordinateSystem().AxisX, myBoltGroup.GetCoordinateSystem().AxisY);
+			Matrix transformationMatrix = MatrixFactory.ToCoordinateSystem(boltCS);
 
-			foreach (Part part in boltedParts)
+			//Console.WriteLine(boltCS.Origin);
+			//Console.WriteLine(myBoltGroup.SecondPosition);
+			//Console.WriteLine(transformationMatrix.Transform(myBoltGroup.SecondPosition));
+			foreach (Point p in myBoltGroup.BoltPositions)
 			{
-				Console.WriteLine(part.Profile.ProfileString);
-				ArrayList intesections = new ArrayList(part.GetSolid().Intersect(new Point(12387.87, 212.13, 104.0),new Point(12158.07, 220.97, -131.4)));
-				foreach (Point myPoint in intesections)
+				Point myPoint = new Point(transformationMatrix.Transform(p));
+				Point pStart = new Point(myPoint.X, myPoint.Y, myPoint.Z - boltCutLength);
+				Point pEnd = new Point(myPoint.X, myPoint.Y, myPoint.Z + boltCutLength);
+				LineSegment ls = new LineSegment(MatrixFactory.FromCoordinateSystem(boltCS).Transform(pStart), MatrixFactory.FromCoordinateSystem(boltCS).Transform(pEnd));
+				GraphicsDrawer.DrawText(ls.Point1, "start", TextColor);
+				GraphicsDrawer.DrawText(ls.Point2, "end", TextColor);
+				boltLines.Add(ls);
+			}
+
+
+			foreach (LineSegment ls in boltLines)
+			{
+				foreach (Part part in boltedParts)
 				{
-					Console.WriteLine(myPoint.ToString());
+					ArrayList intesections = new ArrayList(part.GetSolid().Intersect(ls));
+					foreach (Point myPoint in intesections)
+					{
+						Console.WriteLine(myPoint.ToString());
+					}
 				}
 			}
-			foreach (Point cord in myBoltGroup.BoltPositions)
-			{
-				Console.WriteLine(cord.ToString());
-			}
-			
         }
-
-
     }
 }
