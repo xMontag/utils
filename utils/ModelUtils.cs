@@ -23,6 +23,10 @@ namespace utils
 		private readonly static Color TextColor = new Color(1, 0, 1);
 		public static void CheckOneBoltGroup()
         {
+
+			bool[] boltChecks = new bool[5];
+
+
 			
 
             Picker picker = new Picker();            
@@ -71,18 +75,46 @@ namespace utils
 				boltLines.Add(ls);
 			}
 
+			ArrayList myBoltArrayLS = new ArrayList();
 
 			foreach (LineSegment ls in boltLines)
 			{
+				ArrayList myBoltSubArrayLS = new ArrayList();
+				myBoltSubArrayLS.Add(ls);
 				foreach (Part part in boltedParts)
 				{
-					ArrayList intesections = new ArrayList(part.GetSolid().Intersect(ls));
-					foreach (Point myPoint in intesections)
+					
+					ArrayList intersections = new ArrayList(part.GetSolid().Intersect(ls));
+					if (intersections.Count == 0 || intersections.Count % 2 != 0)
 					{
-						Console.WriteLine(myPoint.ToString());
+						Console.WriteLine("check 1 NO!");
+						boltChecks[0] = false;
+						break;
 					}
+					else
+					{
+						LineSegment myLineSegment = new LineSegment(intersections[0] as Point, intersections[intersections.Count - 1] as Point);
+						myBoltSubArrayLS.Add(myLineSegment);
+					} 	
+				}
+				myBoltArrayLS.Add(myBoltSubArrayLS);
+
+			}
+			int numOfBolt = 0;
+
+			foreach (ArrayList a in myBoltArrayLS)
+			{
+				Console.WriteLine(numOfBolt++);
+				int numOfLS = 0;
+				foreach (LineSegment ls in a)
+				{
+					Console.WriteLine(numOfLS++);
+					Console.WriteLine(ls.Point1);
+					Console.WriteLine(ls.Point2);
 				}
 			}
+
+
         }
     }
 }
