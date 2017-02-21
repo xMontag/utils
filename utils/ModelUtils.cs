@@ -67,8 +67,8 @@ namespace utils
 			foreach (Point p in myBoltGroup.BoltPositions)
 			{
 				Point myPoint = new Point(transformationMatrix.Transform(p));
-				Point pStart = new Point(myPoint.X, myPoint.Y, myPoint.Z - boltCutLength);
-				Point pEnd = new Point(myPoint.X, myPoint.Y, myPoint.Z + boltCutLength);
+				Point pStart = new Point(myPoint.X, myPoint.Y, myPoint.Z - boltCutLength / 2);
+				Point pEnd = new Point(myPoint.X, myPoint.Y, myPoint.Z + boltCutLength / 2);
 				LineSegment ls = new LineSegment(MatrixFactory.FromCoordinateSystem(boltCS).Transform(pStart), MatrixFactory.FromCoordinateSystem(boltCS).Transform(pEnd));
 				GraphicsDrawer.DrawText(ls.Point1, "start", TextColor);
 				GraphicsDrawer.DrawText(ls.Point2, "end", TextColor);
@@ -87,7 +87,7 @@ namespace utils
 					ArrayList intersections = new ArrayList(part.GetSolid().Intersect(ls));
 					if (intersections.Count == 0 || intersections.Count % 2 != 0)
 					{
-						Console.WriteLine("check 1 NO!");
+						//Console.WriteLine("check 1 NO!");
 						boltChecks[0] = false;
 						break;
 					}
@@ -100,21 +100,68 @@ namespace utils
 				myBoltArrayLS.Add(myBoltSubArrayLS);
 
 			}
-			int numOfBolt = 0;
+
+
+			//int numOfBolt = 0;
 
 			foreach (ArrayList a in myBoltArrayLS)
 			{
-				Console.WriteLine(numOfBolt++);
-				int numOfLS = 0;
-				foreach (LineSegment ls in a)
+				if (!(compareArrayLS(myBoltArrayLS[0] as ArrayList, a)))
 				{
-					Console.WriteLine(numOfLS++);
-					Console.WriteLine(ls.Point1);
-					Console.WriteLine(ls.Point2);
+					boltChecks[0] = false;
+					break;
+				}
+				else
+				{
+					boltChecks[0] = true;
+				}
+				//Console.WriteLine(numOfBolt++);
+
+				//int numOfLS = 0;
+				//foreach (LineSegment ls in a)
+				//{
+					//Console.WriteLine(numOfLS++);
+					//Console.WriteLine(ls.Length());
+					//Console.WriteLine(ls.Point1);
+					//Console.WriteLine(ls.Point2);
+				//}
+			}
+			Console.WriteLine(boltChecks[0]);
+		}
+
+		public static bool compareArrayLS(ArrayList Arr1, ArrayList Arr2)
+		{
+			Console.WriteLine(Arr1.Count + " " + Arr2.Count);
+			if (Arr1.Count != Arr2.Count)
+			{
+				return false;
+			}
+			else
+			{
+				LineSegment l1 = Arr1[0] as LineSegment;;
+				LineSegment l2 = Arr2[0] as LineSegment;;
+				LineSegment ls1;
+				LineSegment ls2;
+
+				for (int i = 1; i < Arr1.Count; i++)
+				{
+					ls1 = Arr1[i] as LineSegment;
+					ls2 = Arr2[i] as LineSegment;
+
+					LineSegment segm1Start = new LineSegment(l1.Point1, ls1.Point1);
+					LineSegment segm1End = new LineSegment(l1.Point1, ls1.Point2);
+					LineSegment segm2Start = new LineSegment(l2.Point1, ls2.Point1);
+					LineSegment segm2End = new LineSegment(l2.Point1, ls2.Point2);
+
+					Console.WriteLine(segm1Start.Length() + " " + segm2Start.Length());
+					Console.WriteLine(segm2End.Length() + " " + segm2End.Length());
+					if ((Math.Abs(segm1Start.Length() - segm2Start.Length()) > 0.01) && (Math.Abs(segm1End.Length() - segm2End.Length()) > 0.01))
+						{
+							return false;
+						}
 				}
 			}
-
-
-        }
+			return true;
+		}
     }
 }
