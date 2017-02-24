@@ -33,10 +33,13 @@ namespace utils
             BoltGroup myBoltGroup = picker.PickObject(Picker.PickObjectEnum.PICK_ONE_BOLTGROUP, "pick BOLT GROUP") as BoltGroup;
 			double boltLength = 0,
 			       boltDiameter = 0;
+			// число деталей в пакете
 			int boltNParts = 1;
 			myBoltGroup.GetReportProperty("BOLT_NPARTS", ref boltNParts);
-			List<Part> boltedParts = new List<Part>();
 
+			// спислк деталей пакета
+
+			List<Part> boltedParts = new List<Part>();
 			boltedParts.Add(myBoltGroup.PartToBoltTo);
 			if (boltNParts > 2)
 			{
@@ -50,14 +53,17 @@ namespace utils
 				boltedParts.Add(myBoltGroup.PartToBeBolted);
 			}
 
+			// другие свойства болта
 			myBoltGroup.GetReportProperty("LENGTH",ref boltLength);
 			myBoltGroup.GetReportProperty("DIAMETER", ref boltDiameter);
 
 			double boltExtraLenght = myBoltGroup.ExtraLength;
 			double boltCutLength = myBoltGroup.CutLength;
 
-			ArrayList boltLines = new ArrayList();
+			// список отрезков по каждому болту
 
+			ArrayList boltLines = new ArrayList();
+			// система координат болта
 			CoordinateSystem boltCS = new CoordinateSystem(myBoltGroup.FirstPosition, myBoltGroup.GetCoordinateSystem().AxisX, myBoltGroup.GetCoordinateSystem().AxisY);
 			Matrix transformationMatrix = MatrixFactory.ToCoordinateSystem(boltCS);
 
@@ -70,10 +76,12 @@ namespace utils
 				Point pStart = new Point(myPoint.X, myPoint.Y, myPoint.Z - boltCutLength / 2);
 				Point pEnd = new Point(myPoint.X, myPoint.Y, myPoint.Z + boltCutLength / 2);
 				LineSegment ls = new LineSegment(MatrixFactory.FromCoordinateSystem(boltCS).Transform(pStart), MatrixFactory.FromCoordinateSystem(boltCS).Transform(pEnd));
-				GraphicsDrawer.DrawText(ls.Point1, "start", TextColor);
-				GraphicsDrawer.DrawText(ls.Point2, "end", TextColor);
+				//GraphicsDrawer.DrawText(ls.Point1, "start", TextColor);
+				//GraphicsDrawer.DrawText(ls.Point2, "end", TextColor);
 				boltLines.Add(ls);
 			}
+
+			// список отрезков пересечения каждого болта с каждой деталью пакета + проверка на правильность в модели CHECK - 0
 
 			ArrayList myBoltArrayLS = new ArrayList();
 
@@ -102,7 +110,7 @@ namespace utils
 			}
 
 
-			//int numOfBolt = 0;
+			// проверка болтового поля на правильность в модели CHECK - 0
 
 			foreach (ArrayList a in myBoltArrayLS)
 			{
@@ -126,12 +134,35 @@ namespace utils
 					//Console.WriteLine(ls.Point2);
 				//}
 			}
+
+			// составление списка отрезков пересечений одного болта где под индексом 0 полный отрезок болта
+
+			ArrayList myBoltArrayOneLS = new ArrayList();
+			foreach (LineSegment ls in myBoltArrayLS[0] as ArrayList)
+			{
+				myBoltArrayOneLS.Add(TransformLineSegmentToCS(ls, boltCS));
+
+			}
+
+
+			// вывод точек в консоль
+			foreach (LineSegment ls in myBoltArrayOneLS)
+			{
+				Console.WriteLine(ls.Point1 + " " + ls.Point2);
+			}
+
+
+
+
+
 			Console.WriteLine(boltChecks[0]);
 		}
 
+		// проверка отрезков пересечения с деталью на одинаковость во всех болтах болтового поля
+
 		public static bool compareArrayLS(ArrayList Arr1, ArrayList Arr2)
 		{
-			Console.WriteLine(Arr1.Count + " " + Arr2.Count);
+			//Console.WriteLine(Arr1.Count + " " + Arr2.Count);
 			if (Arr1.Count != Arr2.Count)
 			{
 				return false;
@@ -153,8 +184,8 @@ namespace utils
 					LineSegment segm2Start = new LineSegment(l2.Point1, ls2.Point1);
 					LineSegment segm2End = new LineSegment(l2.Point1, ls2.Point2);
 
-					Console.WriteLine(segm1Start.Length() + " " + segm2Start.Length());
-					Console.WriteLine(segm2End.Length() + " " + segm2End.Length());
+					//Console.WriteLine(segm1Start.Length() + " " + segm2Start.Length());
+					//Console.WriteLine(segm2End.Length() + " " + segm2End.Length());
 					if ((Math.Abs(segm1Start.Length() - segm2Start.Length()) > 0.01) && (Math.Abs(segm1End.Length() - segm2End.Length()) > 0.01))
 						{
 							return false;
@@ -162,6 +193,36 @@ namespace utils
 				}
 			}
 			return true;
+		}
+
+		// перевод отрезка из одной системы координат в другую
+
+		public static LineSegment TransformLineSegmentToCS(LineSegment ls, CoordinateSystem cs)
+		{
+			Matrix transformationMatrix = MatrixFactory.ToCoordinateSystem(cs);
+
+			LineSegment newLS = new LineSegment(new Point(transformationMatrix.Transform(ls.Point1)), new Point(transformationMatrix.Transform(ls.Point2)));
+			return newLS;
+		}
+
+		// соритировка отрезков от максимально приближенного к точке до удаленного
+
+		public static ArrayList SortArrayLS(ArrayList arr, Point p)
+		{
+			ArrayList newArr = new ArrayList(arr);
+			LineSegment minLS = new LineSegment((arr[0] as LineSegment).Point1, (arr[0] as LineSegment).Point2);
+			int i = 0;
+			foreach (LineSegment ls in arr)
+			{
+				Point p1_r = new Point(ls.Point1);
+				Point p2_r = new Point(ls.Point1);
+				Point 
+				if (true)
+				{
+				
+				}
+			}
+			return newArr;
 		}
     }
 }
