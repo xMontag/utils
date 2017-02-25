@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 using Tekla.Structures;
 using Tekla.Structures.Model;
 using Tekla.Structures.Model.UI;
@@ -123,16 +124,6 @@ namespace utils
 				{
 					boltChecks[0] = true;
 				}
-				//Console.WriteLine(numOfBolt++);
-
-				//int numOfLS = 0;
-				//foreach (LineSegment ls in a)
-				//{
-					//Console.WriteLine(numOfLS++);
-					//Console.WriteLine(ls.Length());
-					//Console.WriteLine(ls.Point1);
-					//Console.WriteLine(ls.Point2);
-				//}
 			}
 
 			// составление списка отрезков пересечений одного болта где под индексом 0 полный отрезок болта
@@ -144,12 +135,15 @@ namespace utils
 
 			}
 
-
+			Point firstPoint = (myBoltArrayOneLS[0] as LineSegment).Point1;
 			// вывод точек в консоль
-			foreach (LineSegment ls in myBoltArrayOneLS)
-			{
-				Console.WriteLine(ls.Point1 + " " + ls.Point2);
-			}
+			PrintConsole(myBoltArrayOneLS);
+			// сортировка отрезков
+			myBoltArrayOneLS = SortArrayLS(myBoltArrayOneLS, firstPoint);
+
+			PrintConsole(myBoltArrayOneLS);
+
+
 
 
 
@@ -209,20 +203,85 @@ namespace utils
 
 		public static ArrayList SortArrayLS(ArrayList arr, Point p)
 		{
-			ArrayList newArr = new ArrayList(arr);
-			LineSegment minLS = new LineSegment((arr[0] as LineSegment).Point1, (arr[0] as LineSegment).Point2);
-			int i = 0;
+			ArrayList newArr = new ArrayList();
 			foreach (LineSegment ls in arr)
 			{
 				Point p1_r = new Point(ls.Point1);
-				Point p2_r = new Point(ls.Point1);
-				Point 
-				if (true)
+				Point p2_r = new Point(ls.Point2);
+				Point p1 = new Point();
+				Point p2 = new Point();
+				LineSegment ls1 = new LineSegment(p, p1_r);
+				LineSegment ls2 = new LineSegment(p, p2_r);
+				if (ls1.Length() <= ls2.Length())
 				{
-				
+					p1 = p1_r;
+					p2 = p2_r;
+				}
+				else
+				{
+					p2 = p1_r; 
+					p1 = p2_r;
+				}
+				newArr.Add(new LineSegment(p1, p2));
+			}
+			for (int j = 0; j < newArr.Count - 1; j++)
+			{
+				bool f = false;
+				for (int i = 0; i < newArr.Count - j - 1; i++)
+				{
+					LineSegment ls1 = new LineSegment(p, (newArr[i] as LineSegment).Point1);
+					LineSegment ls2 = new LineSegment(p, (newArr[i + 1] as LineSegment).Point1);
+
+					if (ls1.Length() > ls2.Length())
+					{
+						object temp = newArr[i];
+						newArr[i] = newArr[i + 1];
+						newArr[i + 1] = temp;
+						f = true;
+					}
+				}
+				if (f == false)
+				{
+					break;
 				}
 			}
+
 			return newArr;
 		}
+
+		public static ArrayList TolSort(ArrayList arr)
+		{
+			for (int j = 0; j <= arr.Count - 1; j++)
+			{
+				bool f = false;
+				for (int i = 0; i < arr.Count - j - 1; i++)
+				{
+					if ((int)arr[i] > (int)arr[i + 1])
+					{
+						object temp = arr[i];
+						arr[i] = arr[i + 1];
+						arr[i + 1] = temp;
+						f = true;	
+					}
+				}
+				if (f == false)
+				{
+					break;
+				}
+
+			}
+			return arr;
+		}
+
+		// вывод списка отрезков
+
+		public static void PrintConsole(ArrayList arr)
+		{
+			foreach (LineSegment ls in arr)
+			{
+				Console.WriteLine(ls.Point1 + " " + ls.Point2 + " " + ls.Length());
+			}
+			Console.WriteLine();
+		}			
     }
 }

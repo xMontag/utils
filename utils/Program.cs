@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
+
 namespace utils
 {
     public static class Program
@@ -15,6 +17,8 @@ namespace utils
         {
             IsApp = true;
             ModelUtils.CheckOneBoltGroup();
+			Application.EnableVisualStyles();
+			Application.Run(new Form1());
         }
 
     }
